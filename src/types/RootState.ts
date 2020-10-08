@@ -1,15 +1,17 @@
-import { GithubRepoFormState } from 'app/containers/GithubRepoForm/types';
-import { ThemeState } from 'styles/theme/types';
-// [IMPORT NEW CONTAINERSTATE ABOVE] < Needed for generating containers seamlessly
+// [IMPORT NEW CONTAINER-STATE ABOVE] < Needed for generating containers seamlessly
 
 /* 
   Because the redux-injectors injects your reducers asynchronously somewhere in your code
   You have to declare them here manually
-  Properties are optional because they are injected when the components are mounted sometime in your application's life. 
-  So, not available always
 */
+
+import {
+  ITodoType,
+  VisibilityFilter,
+} from '../app/features/todo/redux/todoTypes';
+
 export interface RootState {
-  theme?: ThemeState;
-  githubRepoForm?: GithubRepoFormState;
+  todoState?: ITodoType[];
+  visibilityState?: VisibilityFilter;
   // [INSERT NEW REDUCER KEY ABOVE] < Needed for generating containers seamlessly
 }

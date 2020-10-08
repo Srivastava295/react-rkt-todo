@@ -1,18 +1,14 @@
-export class ResponseError extends Error {
-  public response: Response;
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
-  constructor(response: Response) {
+export class ResponseError extends Error {
+  public response: Response | AxiosResponse;
+
+  constructor(response: Response | AxiosResponse) {
     super(response.statusText);
     this.response = response;
   }
 }
-/**
- * Parses the JSON returned by a network request
- *
- * @param  {object} response A response from a network request
- *
- * @return {object}          The parsed JSON from the request
- */
+
 function parseJSON(response: Response) {
   if (response.status === 204 || response.status === 205) {
     return null;
@@ -20,13 +16,13 @@ function parseJSON(response: Response) {
   return response.json();
 }
 
-/**
- * Checks if a network request came back fine, and throws an error if not
- *
- * @param  {object} response   A response from a network request
- *
- * @return {object|undefined} Returns either the response, or throws an error
- */
+function parseAxiosJSON(response: AxiosResponse) {
+  if (response.status === 204 || response.status === 205) {
+    return null;
+  }
+  return response.data;
+}
+
 function checkStatus(response: Response) {
   if (response.status >= 200 && response.status < 300) {
     return response;
@@ -36,14 +32,15 @@ function checkStatus(response: Response) {
   throw error;
 }
 
-/**
- * Requests a URL, returning a promise
- *
- * @param  {string} url       The URL we want to request
- * @param  {object} [options] The options we want to pass to "fetch"
- *
- * @return {object}           The response data
- */
+function checkAxiosStatus(response: AxiosResponse) {
+  if (response.status >= 200 && response.status < 300) {
+    return response;
+  }
+  const error = new ResponseError(response);
+  error.response = response;
+  throw error;
+}
+
 export async function request(
   url: string,
   options?: RequestInit,
@@ -51,4 +48,13 @@ export async function request(
   const fetchResponse = await fetch(url, options);
   const response = checkStatus(fetchResponse);
   return parseJSON(response);
+}
+
+export async function axiosRequest(
+  url: string,
+  options?: AxiosRequestConfig,
+): Promise<AxiosResponse> {
+  const fetchResponse = await axios(url, options);
+  const response = checkAxiosStatus(fetchResponse);
+  return parseAxiosJSON(response);
 }
